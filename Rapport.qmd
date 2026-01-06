@@ -1,0 +1,27 @@
+---
+title: "AirBnB"
+format: html
+editor: visual
+---
+
+## Chargement des librairies
+```{r}
+library(readr)
+library(tidyverse)  # Manipulation et Visualisation
+library(lubridate)  
+library(skimr)      # Statistique
+```
+
+## Importation des données
+```{r}
+listings <- read_csv("data/listings.csv")
+neigh <- read_csv("data/neighbourhoods.csv")
+reviews <- read_csv("data/reviews.csv")
+```
+
+## Nettoyage des noms des colonnes
+````{r}
+listings <- janitor::clean_names(listings)
+````
+
+
