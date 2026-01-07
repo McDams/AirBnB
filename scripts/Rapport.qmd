@@ -14,16 +14,243 @@ library(skimr)      # Statistique
 ```
 
 ## 2. Importation des données
-### 2.1 Paris
+
+## 2.1 Paris
+## 2.1.1 Listings
+
 ```{r}
 listings_paris <- read_csv("../data/paris/listings.csv")
-neigh_paris <- read_csv("../data/paris/neighbourhoods.csv")
-reviews_paris <- read_csv("../data/paris/reviews.csv")
 ```
 
-### 2.2 Bordeaux
+## 2.1.2 Affichage des premières lignes
+```{r}
+head(listings_paris)
+```
+
+## 2.1.3 Statistiques descriptives
+```{r}
+skim(listings_paris)
+```
+
+## 2.2 Bordeaux
+## 2.2.1 Listings
 ```{r}
 listings_bordeaux <- read_csv("../data/bordeaux/listings.csv")
-neigh_bordeaux <- read_csv("../data/bordeaux/neighbourhoods.csv")
-reviews_bordeaux <- read_csv("../data/bordeaux/reviews.csv")
 ```
+
+## 2.2.2 Affichage des premières lignes
+```{r}
+head(listings_bordeaux)
+```
+
+## 2.2.3 Statistiques descriptives
+```{r}
+skim(listings_bordeaux)
+```
+## 2.3 Lyon
+## 2.3.1 Listings
+```{r}
+listings_lyon <- read_csv("../data/lyon/listings.csv")
+```
+
+## 2.3.2 Affichage des premières lignes
+```{r}
+head(listings_lyon)
+```
+
+## 2.3.3 Statistiques descriptives
+```{r}
+skim(listings_lyon)
+```
+
+## 3. Nettoyage des données
+## 3.1 Paris
+## 3.1.1 Listings - Suppression des colonnes inutiles
+```{r}
+# Suppression de la colonne licence
+listings_paris <- listings_paris %>%
+  select(-license)
+
+# Suppression de la colonne neighbourhood_group
+listings_paris <- listings_paris %>%
+  select(-neighbourhood_group)
+
+# Vérification
+head(listings_paris)
+```
+## 3.1.2 Listings - Supresion des lignes NA dans la colonne price
+```{r}
+# Suppression des lignes avec des valeurs NA dans la colonne price
+listings_paris <- listings_paris %>%
+  filter(!is.na(price))
+
+# Vérification
+head(listings_paris)
+```
+
+## 3.2 Bordeaux
+## 3.2.1 Listings - Suppression des colonnes inutiles
+```{r}
+# Suppression de la colonne licence
+listings_bordeaux <- listings_bordeaux %>%
+  select(-license)
+
+# Suppression de la colonne neighbourhood_group
+listings_bordeaux <- listings_bordeaux %>%
+  select(-neighbourhood_group)
+
+# Vérification
+head(listings_bordeaux)
+```
+
+3.2.2 Listings - Supresion des lignes NA dans la colonne price
+```{r}
+# Suppression des lignes avec des valeurs NA dans la colonne price
+listings_bordeaux <- listings_bordeaux %>%
+  filter(!is.na(price))
+
+# Vérification
+head(listings_bordeaux)
+```
+
+## 3.3 Lyon
+## 3.3.1 Listings - Suppression des colonnes inutiles
+```{r}
+# Suppression de la colonne licence
+listings_lyon <- listings_lyon %>%
+  select(-license)
+
+# Suppression de la colonne neighbourhood_group
+listings_lyon <- listings_lyon %>%
+  select(-neighbourhood_group)
+
+# Vérification
+head(listings_lyon)
+```
+## 3.3.2 Listings - Supresion des lignes NA dans la colonne price
+```{r}
+# Suppression des lignes avec des valeurs NA dans la colonne price
+listings_lyon <- listings_lyon %>%
+  filter(!is.na(price))
+
+# Vérification
+head(listings_lyon)
+```
+
+## 4. Sauvegarde des données nettoyées
+```{r}
+write_csv(listings_paris, "../data_cleaned/paris/listings_cleaned.csv")
+write_csv(listings_bordeaux, "../data_cleaned/bordeaux/listings_cleaned.csv")
+write_csv(listings_lyon, "../data_cleaned/lyon/listings_cleaned.csv")
+```
+
+## 5. Renommer les fichiers nettoyés
+```{r}
+file.rename("../data_cleaned/paris/listings_cleaned.csv", "../data_cleaned/paris/listings_paris_cleaned.csv")
+file.rename("../data_cleaned/bordeaux/listings_cleaned.csv", "../data_cleaned/bordeaux/listings_bordeaux_cleaned.csv")
+file.rename("../data_cleaned/lyon/listings_cleaned.csv", "../data_cleaned/lyon/listings_lyon_cleaned.csv")
+```
+
+## 6. Analyse exploratoire des données (EDA)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
