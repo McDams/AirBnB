@@ -1,0 +1,29 @@
+---
+title: "AirBnB"
+format: html
+editor: visual
+---
+
+## 1. Chargement des librairies
+
+```{r}
+library(readr)
+library(tidyverse)  # Manipulation et Visualisation
+library(lubridate)  
+library(skimr)      # Statistique
+```
+
+## 2. Importation des données
+### 2.1 Paris
+```{r}
+listings_paris <- read_csv("../data/paris/listings.csv")
+neigh_paris <- read_csv("../data/paris/neighbourhoods.csv")
+reviews_paris <- read_csv("../data/paris/reviews.csv")
+```
+
+### 2.2 Bordeaux
+```{r}
+listings_bordeaux <- read_csv("../data/bordeaux/listings.csv")
+neigh_bordeaux <- read_csv("../data/bordeaux/neighbourhoods.csv")
+reviews_bordeaux <- read_csv("../data/bordeaux/reviews.csv")
+```
