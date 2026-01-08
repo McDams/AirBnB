@@ -26,8 +26,13 @@ listings_paris <- read_csv("../data/paris/listings.csv")
 ```{r}
 head(listings_paris)
 ```
+## 2.1.3 Suppression des doublons
+```{r}
+listings_paris <- listings_paris %>%
+  distinct()
+```
 
-## 2.1.3 Statistiques descriptives
+## 2.1.4 Statistiques descriptives
 ```{r}
 skim(listings_paris)
 ```
@@ -42,8 +47,13 @@ listings_bordeaux <- read_csv("../data/bordeaux/listings.csv")
 ```{r}
 head(listings_bordeaux)
 ```
+## 2.2.3 Suppression des doublons
+```{r}
+listings_bordeaux <- listings_bordeaux %>%
+  distinct()
+```
 
-## 2.2.3 Statistiques descriptives
+## 2.2.4 Statistiques descriptives
 ```{r}
 skim(listings_bordeaux)
 ```
@@ -57,8 +67,13 @@ listings_lyon <- read_csv("../data/lyon/listings.csv")
 ```{r}
 head(listings_lyon)
 ```
+## 2.3.3 Suppression des doublons
+```{r}
+listings_lyon <- listings_lyon %>%
+  distinct()
+```
 
-## 2.3.3 Statistiques descriptives
+## 2.3.4 Statistiques descriptives
 ```{r}
 skim(listings_lyon)
 ```
@@ -151,18 +166,116 @@ file.rename("../data_cleaned/bordeaux/listings_cleaned.csv", "../data_cleaned/bo
 file.rename("../data_cleaned/lyon/listings_cleaned.csv", "../data_cleaned/lyon/listings_lyon_cleaned.csv")
 ```
 
+````{r}
+listings_paris <- read_csv("../data_cleaned/paris/listings_paris_cleaned.csv")
+listings_bordeaux <- read_csv("../data_cleaned/bordeaux/listings_bordeaux_cleaned.csv")
+listings_lyon <- read_csv("../data_cleaned/lyon/listings_lyon_cleaned.csv")
+````
+
 ## 6. Analyse exploratoire des données (EDA)
+## 6.1 Nombre total d'annonces par ville
+```{r}
+total_listings <- tibble(
+  City = c("Paris", "Bordeaux", "Lyon"),
+  Total_Listings = c(nrow(listings_paris), nrow(listings_bordeaux), nrow(listings_lyon))
+)
 
+total_listings
+```
+## 6.2 Graphe du nombre total d'annonces par ville 
+```{r}
+library(ggplot2)
 
+ggplot(total_listings, aes(x = City, y = Total_Listings, fill = City)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Total_Listings), vjust = -0.5) +
+  labs(title = "Nombre total d'annonces par ville", x = "Ville", y = "Nombre total d'annonces") +
+  theme_minimal()
 
+ggsave("../figures/total_listings_by_city.png")
+```
 
+## 6.3 Prix moyen, median, minimum, max des annonces par ville
+## 6.3.1 Convertion de la colonne price en numérique et suppression des symboles $ et , puis conversion en € 
+```{r}
+convert_price <- function(df) {
+  df %>%
+    mutate(price = as.numeric(gsub("[$,]", "", price)) * 0.85)  # Suppression des symboles $ et , puis conversion en €
+}
 
+listings_paris <- convert_price(listings_paris)
+listings_bordeaux <- convert_price(listings_bordeaux)
+listings_lyon <- convert_price(listings_lyon)
+```
 
+## 6.3.2 Calcul des statistiques
+```{r}
+price_stats <- tibble(
+  City = c("Paris", "Bordeaux", "Lyon"),
+  Mean_Price = c(mean(listings_paris$price, na.rm = TRUE),
+                 mean(listings_bordeaux$price, na.rm = TRUE),
+                 mean(listings_lyon$price, na.rm = TRUE)),
+  Median_Price = c(median(listings_paris$price, na.rm = TRUE),
+                   median(listings_bordeaux$price, na.rm = TRUE),
+                   median(listings_lyon$price, na.rm = TRUE)),
+  Min_Price = c(min(listings_paris$price, na.rm = TRUE),
+                min(listings_bordeaux$price, na.rm = TRUE),
+                min(listings_lyon$price, na.rm = TRUE)),
+  Max_Price = c(max(listings_paris$price, na.rm = TRUE),
+                max(listings_bordeaux$price, na.rm = TRUE),
+                max(listings_lyon$price, na.rm = TRUE))
+)
+price_stats
 
+# Sauvegarde des statistiques dans un fichier image
+png("../figures/price_statistics_by_city.png", width = 800, height = 600)
+gridExtra::grid.table(price_stats)
+dev.off()
+```
 
+## 6.4 Distribution des prix des annonces par ville (histogramme)
+```{r}
+ggplot() +
+  geom_histogram(data = listings_paris, aes(x = price, fill = "Paris"), alpha = 0.5, bins = 30) +
+  geom_histogram(data = listings_bordeaux, aes(x = price, fill = "Bordeaux"), alpha = 0.5, bins = 30) +
+  geom_histogram(data = listings_lyon, aes(x = price, fill = "Lyon"), alpha = 0.5, bins = 30) +
+  labs(title = "Distribution des prix des annonces par ville", x = "Prix (€)", y = "Nombre d'annonces") +
+  scale_fill_manual(name = "Ville", values = c("Paris" = "blue", "Bordeaux" = "red", "Lyon" = "green")) +
+  theme_minimal()
 
+ggsave("../figures/price_distribution_by_city.png")
+```
 
+## 6.5 Type de logement le plus courant par ville
+```{r}
+most_common_room_type <- tibble(
+  City = c("Paris", "Bordeaux", "Lyon"),
+  Most_Common_Room_Type = c(
+    listings_paris %>%
+      count(room_type) %>%
+      arrange(desc(n)) %>%
+      slice(1) %>%
+      pull(room_type),
+    listings_bordeaux %>%
+      count(room_type) %>%
+      arrange(desc(n)) %>%
+      slice(1) %>%
+      pull(room_type),
+    listings_lyon %>%
+      count(room_type) %>%
+      arrange(desc(n)) %>%
+      slice(1) %>%
+      pull(room_type)
+  )
+)
 
+most_common_room_type
+
+# Sauvegarde des résultats dans un fichier image
+png("../figures/most_common_room_type_by_city.png", width = 800, height = 600)
+gridExtra::grid.table(most_common_room_type)
+dev.off()
+```
 
 
 
