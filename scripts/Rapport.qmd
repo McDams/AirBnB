@@ -318,7 +318,7 @@ gridExtra::grid.table(most_common_room_type)
 dev.off()
 ```
 
-## Avis & notations
+## 6.6 Avis & notations
 
 ```{r}
 listings_paris <- listings_paris %>% mutate(city = "Paris")
@@ -329,7 +329,7 @@ df <- bind_rows(listings_paris, listings_bordeaux, listings_lyon) %>%
   filter(price > 0)
 ```
 
-##Scatter plot : prix vs nombre de reviews (par ville)
+## 6.7 prix vs nombre de reviews (par ville)
 
 ```{r}
 ggplot(df, aes(x = number_of_reviews, y = price, color = city)) +
@@ -344,7 +344,7 @@ ggplot(df, aes(x = number_of_reviews, y = price, color = city)) +
   theme_minimal()
 ```
 
-##Scatter plot : prix vs reviews par mois
+## 6.8 prix vs reviews par mois
 
 ```{r}
 ggplot(df, aes(x = reviews_per_month, y = price, color = city)) +
@@ -358,7 +358,8 @@ ggplot(df, aes(x = reviews_per_month, y = price, color = city)) +
   ) +
   theme_minimal()
 ```
-##Bar chart : prix moyen par niveau de réputation
+
+## 6.9 prix moyen par niveau de réputation
 
 ```{r}
 df %>%
@@ -380,9 +381,9 @@ df %>%
   ) +
   theme_minimal()
 ```
-##Disponibilité
 
-##Pie chart : logements disponibles / non disponibles par ville
+## 6.10 logements disponibles / non disponibles par ville
+
 ```{r}
 df <- df %>%
   mutate(disponible = availability_365 > 0)
@@ -401,7 +402,9 @@ df %>%
   ) +
   theme_void()
 ```
-##Bar chart : taux de disponibilité par ville
+
+## 6.11 taux de disponibilité par ville
+
 ```{r}
 df %>%
   group_by(city) %>%
@@ -416,7 +419,9 @@ df %>%
   ) +
   theme_minimal()
 ```
-##Scatter plot : prix vs disponibilité
+
+## 6.12 prix vs disponibilité
+
 ```{r}
 ggplot(df, aes(x = availability_365, y = price, color = city)) +
   geom_point(alpha = 0.4) +
@@ -426,52 +431,6 @@ ggplot(df, aes(x = availability_365, y = price, color = city)) +
     x = "Jours disponibles par an",
     y = "Prix (€)",
     color = "Ville"
-  ) +
-  theme_minimal()
-```
-
-##Capacité & caractéristiques
-##Scatter plot : prix vs capacité (par ville)
-```{r}
-ggplot(df, aes(x = accommodates, y = price, color = city)) +
-  geom_point(alpha = 0.4) +
-  scale_y_log10() +
-  labs(
-    title = "Prix vs capacité d'accueil",
-    x = "Capacité",
-    y = "Prix (€)",
-    color = "Ville"
-  ) +
-  theme_minimal()
-```
-
-##Bar chart : prix moyen par nombre de chambres
-```{r}
-df %>%
-  filter(!is.na(bedrooms)) %>%
-  group_by(city, bedrooms) %>%
-  summarise(mean_price = mean(price), .groups = "drop") %>%
-  ggplot(aes(x = factor(bedrooms), y = mean_price, fill = city)) +
-  geom_col(position = "dodge") +
-  labs(
-    title = "Prix moyen selon le nombre de chambres",
-    x = "Nombre de chambres",
-    y = "Prix moyen (€)",
-    fill = "Ville"
-  ) +
-  theme_minimal()
-```
-
-##Boxplot : prix selon la capacité
-```{r}
-ggplot(df, aes(x = factor(accommodates), y = price, fill = city)) +
-  geom_boxplot(alpha = 0.7) +
-  scale_y_log10() +
-  labs(
-    title = "Distribution des prix selon la capacité",
-    x = "Capacité",
-    y = "Prix (€)",
-    fill = "Ville"
   ) +
   theme_minimal()
 ```
