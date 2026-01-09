@@ -10,7 +10,7 @@ import {
   Legend,
   ReferenceLine
 } from 'recharts';
-import { priceVsHostListings, cityColors } from '@/data/mockData';
+import { useMockData } from '@/data/useMockData';
 
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
@@ -32,6 +32,10 @@ const CustomTooltip = ({ active, payload }) => {
 };
 
 export const PriceScatterChart = ({ selectedCity = 'all' }) => {
+  const { data } = useMockData();
+  const priceVsHostListings = data?.priceVsHostListings || {};
+  const cityColors = data?.cityColors || {};
+
   const showCity = (city) => selectedCity === 'all' || selectedCity === city;
 
   return (
@@ -86,24 +90,24 @@ export const PriceScatterChart = ({ selectedCity = 'all' }) => {
         {showCity('Paris') && (
           <Scatter 
             name="Paris" 
-            data={priceVsHostListings.Paris} 
-            fill={cityColors.paris.main}
+            data={priceVsHostListings.Paris || []} 
+            fill={cityColors.paris?.main}
             opacity={0.6}
           />
         )}
         {showCity('Bordeaux') && (
           <Scatter 
             name="Bordeaux" 
-            data={priceVsHostListings.Bordeaux} 
-            fill={cityColors.bordeaux.main}
+            data={priceVsHostListings.Bordeaux || []} 
+            fill={cityColors.bordeaux?.main}
             opacity={0.6}
           />
         )}
         {showCity('Lyon') && (
           <Scatter 
             name="Lyon" 
-            data={priceVsHostListings.Lyon} 
-            fill={cityColors.lyon.main}
+            data={priceVsHostListings.Lyon || []} 
+            fill={cityColors.lyon?.main}
             opacity={0.6}
           />
         )}

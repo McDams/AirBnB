@@ -9,7 +9,7 @@ import {
   Cell,
   LabelList
 } from 'recharts';
-import { hostsAnalysis, cityColors } from '@/data/mockData';
+import { useMockData } from '@/data/useMockData';
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -26,12 +26,16 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export const HostsAnalysisChart = ({ city = 'Paris' }) => {
-  const data = hostsAnalysis[city] || hostsAnalysis.Paris;
+  const { data: mockData } = useMockData();
+  const hostsAnalysis = mockData?.hostsAnalysis || {};
+  const cityColors = mockData?.cityColors || {};
+
+  const data = hostsAnalysis[city] || hostsAnalysis.Paris || [];
   
   const colors = {
-    Paris: [cityColors.paris.main, cityColors.paris.glow],
-    Bordeaux: [cityColors.bordeaux.main, cityColors.bordeaux.glow],
-    Lyon: [cityColors.lyon.main, cityColors.lyon.glow],
+    Paris: [cityColors.paris?.main, cityColors.paris?.glow],
+    Bordeaux: [cityColors.bordeaux?.main, cityColors.bordeaux?.glow],
+    Lyon: [cityColors.lyon?.main, cityColors.lyon?.glow],
   };
 
   const cityColorSet = colors[city] || colors.Paris;

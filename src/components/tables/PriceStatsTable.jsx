@@ -7,9 +7,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { priceStats, cityColors } from '@/data/mockData';
+import { useMockData } from '@/data/useMockData';
 
 export const PriceStatsTable = () => {
+  const { data } = useMockData();
+  const priceStats = data?.priceStats || [];
+
   const getCityDot = (city) => {
     const color = city === 'Paris' ? 'bg-paris' : city === 'Bordeaux' ? 'bg-bordeaux' : 'bg-lyon';
     return <div className={`w-3 h-3 rounded-full ${color}`} />;

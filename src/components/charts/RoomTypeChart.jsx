@@ -6,7 +6,7 @@ import {
   Legend,
   Tooltip
 } from 'recharts';
-import { roomTypeDistribution, cityColors } from '@/data/mockData';
+import { useMockData } from '@/data/useMockData';
 
 const ROOM_COLORS = [
   'hsl(173, 58%, 45%)', // Primary teal
@@ -52,13 +52,16 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 };
 
 export const RoomTypeChart = ({ city = 'Paris' }) => {
-  const data = roomTypeDistribution[city] || roomTypeDistribution.Paris;
+  const { data } = useMockData();
+  const roomTypeDistribution = data?.roomTypeDistribution || {};
+
+  const dataset = roomTypeDistribution[city] || roomTypeDistribution.Paris || [];
 
   return (
     <ResponsiveContainer width="100%" height={300}>
       <PieChart>
         <Pie
-          data={data}
+          data={dataset}
           cx="50%"
           cy="50%"
           labelLine={false}
@@ -69,7 +72,7 @@ export const RoomTypeChart = ({ city = 'Paris' }) => {
           nameKey="type"
           paddingAngle={2}
         >
-          {data.map((entry, index) => (
+          {dataset.map((entry, index) => (
             <Cell 
               key={`cell-${index}`} 
               fill={ROOM_COLORS[index % ROOM_COLORS.length]}

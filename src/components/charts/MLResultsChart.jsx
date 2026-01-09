@@ -9,7 +9,7 @@ import {
   Cell,
   LabelList
 } from 'recharts';
-import { mlModelResults, cityColors } from '@/data/mockData';
+import { useMockData } from '@/data/useMockData';
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -29,11 +29,15 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export const MLResultsChart = () => {
+  const { data } = useMockData();
+  const mlModelResults = data?.mlModelResults || [];
+  const cityColors = data?.cityColors || {};
+
   const getBarColor = (city) => {
     switch (city) {
-      case 'Paris': return cityColors.paris.main;
-      case 'Bordeaux': return cityColors.bordeaux.main;
-      case 'Lyon': return cityColors.lyon.main;
+      case 'Paris': return cityColors.paris?.main;
+      case 'Bordeaux': return cityColors.bordeaux?.main;
+      case 'Lyon': return cityColors.lyon?.main;
       default: return 'hsl(var(--primary))';
     }
   };

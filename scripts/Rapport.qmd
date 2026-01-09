@@ -1005,15 +1005,15 @@ summary_kpis <- list(
   avgR2Score    = mean(ml_model_results$r2, na.rm=TRUE)
 )
 
-# Écrire un seul JSON aligné sur mockData.js
-library(here)
+# Écrire un seul JSON accessible depuis le front
+# Cible : public/data/mockData.json pour accès direct sans build
 
-output_path <- here::here("src", "data", "mockData.json")
+# Determine output path - adapt based on your working directory
+output_path <- here::here("public", "data", "mockData.json")
 dir.create(dirname(output_path), recursive = TRUE, showWarnings = FALSE)
 
 jsonlite::write_json(
   list(
-    cityColors = NULL,
     totalListings = total_listings,
     priceStats = price_stats,
     roomTypeDistribution = room_type_distribution,
@@ -1034,4 +1034,6 @@ jsonlite::write_json(
   auto_unbox = TRUE,
   pretty = TRUE
 )
+
+cat("✓ JSON exporté vers:", output_path, "\n")
 ```

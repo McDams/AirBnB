@@ -9,7 +9,7 @@ import {
   Cell,
   LabelList
 } from 'recharts';
-import { totalListings, cityColors } from '@/data/mockData';
+import { useMockData } from '@/data/useMockData';
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -26,11 +26,15 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export const TotalListingsChart = () => {
+  const { data } = useMockData();
+  const totalListings = data?.totalListings || [];
+  const cityColors = data?.cityColors || {};
+
   const getBarColor = (city) => {
     switch (city) {
-      case 'Paris': return cityColors.paris.main;
-      case 'Bordeaux': return cityColors.bordeaux.main;
-      case 'Lyon': return cityColors.lyon.main;
+      case 'Paris': return cityColors.paris?.main;
+      case 'Bordeaux': return cityColors.bordeaux?.main;
+      case 'Lyon': return cityColors.lyon?.main;
       default: return 'hsl(var(--primary))';
     }
   };

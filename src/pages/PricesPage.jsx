@@ -6,7 +6,7 @@ import { PriceDistributionChart } from '@/components/charts/PriceDistributionCha
 import { TopNeighbourhoodsChart } from '@/components/charts/TopNeighbourhoodsChart';
 import { PriceStatsTable } from '@/components/tables/PriceStatsTable';
 import { OutlierCleaningTable } from '@/components/tables/OutlierCleaningTable';
-import { priceStats, boxplotData } from '@/data/mockData';
+import { useMockData } from '@/data/useMockData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   BarChart, 
@@ -21,10 +21,9 @@ import {
   ComposedChart,
   Scatter
 } from 'recharts';
-import { cityColors } from '@/data/mockData';
 
 // Custom Boxplot Chart
-const BoxplotChart = () => {
+const BoxplotChart = ({ boxplotData, cityColors = {} }) => {
   const data = Object.entries(boxplotData).map(([city, values]) => ({
     city,
     min: values.min,
@@ -33,9 +32,9 @@ const BoxplotChart = () => {
     q3: values.q3,
     max: values.max,
     range: [values.q1, values.q3],
-    color: city === 'Paris' ? cityColors.paris.main : 
-           city === 'Bordeaux' ? cityColors.bordeaux.main : 
-           cityColors.lyon.main
+    color: city === 'Paris' ? cityColors?.paris?.main || '#3b82f6' : 
+           city === 'Bordeaux' ? cityColors?.bordeaux?.main || '#ec4899' : 
+           cityColors?.lyon?.main || '#f59e0b'
   }));
 
   const CustomTooltip = ({ active, payload, label }) => {
@@ -95,6 +94,9 @@ const BoxplotChart = () => {
 };
 
 export const PricesPage = ({ selectedCity }) => {
+  const { data } = useMockData();
+  const { priceStats = [], boxplotData = {}, cityColors = {} } = data || {};
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -180,7 +182,7 @@ export const PricesPage = ({ selectedCity }) => {
           subtitle="Distribution statistique et détection des outliers"
           delay={0.5}
         >
-          <BoxplotChart />
+          <BoxplotChart boxplotData={boxplotData} cityColors={cityColors} />
         </ChartCard>
 
         <ChartCard

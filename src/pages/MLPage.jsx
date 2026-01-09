@@ -6,11 +6,14 @@ import { MLResultsChart } from '@/components/charts/MLResultsChart';
 import { PredictedVsActualChart } from '@/components/charts/PredictedVsActualChart';
 import { AvailabilityImpactChart } from '@/components/charts/AvailabilityImpactChart';
 import { Scatter3D } from '@/components/charts/Scatter3D';
-import { mlModelResults } from '@/data/mockData';
+import { useMockData } from '@/data/useMockData';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 
 export const MLPage = ({ selectedCity }) => {
+  const { data } = useMockData();
+  const { mlModelResults = [] } = data || {};
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {

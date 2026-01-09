@@ -8,7 +8,7 @@ import {
   ResponsiveContainer,
   Legend
 } from 'recharts';
-import { priceDistribution, cityColors } from '@/data/mockData';
+import { useMockData } from '@/data/useMockData';
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -29,12 +29,20 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export const PriceDistributionChart = ({ selectedCity = 'all' }) => {
+  const { data } = useMockData();
+  const priceDistribution = data?.priceDistribution || { Paris: [], Bordeaux: [], Lyon: [] };
+  const cityColors = data?.cityColors || {};
+
+  const paris = priceDistribution.Paris || [];
+  const bordeaux = priceDistribution.Bordeaux || [];
+  const lyon = priceDistribution.Lyon || [];
+
   // Combine data for all cities
-  const combinedData = priceDistribution.Paris.map((item, index) => ({
+  const combinedData = paris.map((item, index) => ({
     range: item.range,
-    Paris: priceDistribution.Paris[index].count,
-    Bordeaux: priceDistribution.Bordeaux[index].count,
-    Lyon: priceDistribution.Lyon[index].count,
+    Paris: item.count,
+    Bordeaux: bordeaux[index]?.count || 0,
+    Lyon: lyon[index]?.count || 0,
   }));
 
   const showCity = (city) => selectedCity === 'all' || selectedCity === city;
@@ -68,7 +76,7 @@ export const PriceDistributionChart = ({ selectedCity = 'all' }) => {
         {showCity('Paris') && (
           <Bar 
             dataKey="Paris" 
-            fill={cityColors.paris.main} 
+            fill={cityColors?.paris?.main || '#3b82f6'} 
             radius={[4, 4, 0, 0]}
             opacity={0.8}
           />
@@ -76,7 +84,7 @@ export const PriceDistributionChart = ({ selectedCity = 'all' }) => {
         {showCity('Bordeaux') && (
           <Bar 
             dataKey="Bordeaux" 
-            fill={cityColors.bordeaux.main} 
+            fill={cityColors?.bordeaux?.main || '#ec4899'} 
             radius={[4, 4, 0, 0]}
             opacity={0.8}
           />
@@ -84,7 +92,7 @@ export const PriceDistributionChart = ({ selectedCity = 'all' }) => {
         {showCity('Lyon') && (
           <Bar 
             dataKey="Lyon" 
-            fill={cityColors.lyon.main} 
+            fill={cityColors?.lyon?.main || '#f59e0b'} 
             radius={[4, 4, 0, 0]}
             opacity={0.8}
           />

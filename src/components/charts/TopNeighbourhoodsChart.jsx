@@ -9,7 +9,7 @@ import {
   Cell,
   LabelList
 } from 'recharts';
-import { topNeighbourhoods, cityColors } from '@/data/mockData';
+import { useMockData } from '@/data/useMockData';
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -26,13 +26,17 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export const TopNeighbourhoodsChart = ({ city = 'Paris' }) => {
-  const data = topNeighbourhoods[city] || topNeighbourhoods.Paris;
+  const { data } = useMockData();
+  const topNeighbourhoods = data?.topNeighbourhoods || {};
+  const cityColors = data?.cityColors || {};
+
+  const dataset = topNeighbourhoods[city] || topNeighbourhoods.Paris || [];
   
   const getColor = () => {
     switch (city) {
-      case 'Paris': return cityColors.paris.main;
-      case 'Bordeaux': return cityColors.bordeaux.main;
-      case 'Lyon': return cityColors.lyon.main;
+      case 'Paris': return cityColors?.paris?.main || '#3b82f6';
+      case 'Bordeaux': return cityColors?.bordeaux?.main || '#ec4899';
+      case 'Lyon': return cityColors?.lyon?.main || '#f59e0b';
       default: return 'hsl(var(--primary))';
     }
   };
@@ -40,7 +44,7 @@ export const TopNeighbourhoodsChart = ({ city = 'Paris' }) => {
   return (
     <ResponsiveContainer width="100%" height={400}>
       <BarChart 
-        data={data} 
+        data={dataset} 
         layout="vertical"
         margin={{ top: 10, right: 80, left: 10, bottom: 10 }}
       >

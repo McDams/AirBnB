@@ -1,4 +1,5 @@
 // Mock data based on R analysis of AirBnB listings for Paris, Bordeaux, and Lyon
+// This file serves as the fallback data source and is merged with any fetched JSON
 
 export const cityColors = {
   paris: {

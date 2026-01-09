@@ -4,11 +4,14 @@ import { KPICard } from '@/components/cards/KPICard';
 import { ChartCard } from '@/components/cards/ChartCard';
 import { HostsAnalysisChart } from '@/components/charts/HostsAnalysisChart';
 import { PriceScatterChart } from '@/components/charts/PriceScatterChart';
-import { hostsAnalysis } from '@/data/mockData';
+import { useMockData } from '@/data/useMockData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 
 export const HostsPage = ({ selectedCity }) => {
+  const { data } = useMockData();
+  const { hostsAnalysis = {} } = data || {};
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {

@@ -11,7 +11,7 @@ import {
   ComposedChart,
   ZAxis
 } from 'recharts';
-import { availabilityImpact, cityColors } from '@/data/mockData';
+import { useMockData } from '@/data/useMockData';
 
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
@@ -33,6 +33,10 @@ const CustomTooltip = ({ active, payload }) => {
 };
 
 export const AvailabilityImpactChart = ({ selectedCity = 'all' }) => {
+  const { data } = useMockData();
+  const availabilityImpact = data?.availabilityImpact || {};
+  const cityColors = data?.cityColors || {};
+
   const showCity = (city) => selectedCity === 'all' || selectedCity === city;
 
   return (
@@ -84,7 +88,7 @@ export const AvailabilityImpactChart = ({ selectedCity = 'all' }) => {
           <Scatter 
             name="Paris" 
             data={availabilityImpact.Paris} 
-            fill={cityColors.paris.main}
+            fill={cityColors?.paris?.main || '#3b82f6'}
             opacity={0.6}
           />
         )}
@@ -92,7 +96,7 @@ export const AvailabilityImpactChart = ({ selectedCity = 'all' }) => {
           <Scatter 
             name="Bordeaux" 
             data={availabilityImpact.Bordeaux} 
-            fill={cityColors.bordeaux.main}
+            fill={cityColors?.bordeaux?.main || '#ec4899'}
             opacity={0.6}
           />
         )}
@@ -100,7 +104,7 @@ export const AvailabilityImpactChart = ({ selectedCity = 'all' }) => {
           <Scatter 
             name="Lyon" 
             data={availabilityImpact.Lyon} 
-            fill={cityColors.lyon.main}
+            fill={cityColors?.lyon?.main || '#f59e0b'}
             opacity={0.6}
           />
         )}

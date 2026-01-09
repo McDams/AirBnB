@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
   Legend
 } from 'recharts';
-import { data3D, cityColors } from '@/data/mockData';
+import { useMockData } from '@/data/useMockData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 
@@ -37,6 +37,10 @@ const CustomTooltip = ({ active, payload }) => {
 
 export const Scatter3D = ({ selectedCity = 'all' }) => {
   const [activeView, setActiveView] = useState('price-avail');
+  const { data } = useMockData();
+  const data3D = data?.data3D || {};
+  const cityColors = data?.cityColors || {};
+
   const showCity = (city) => selectedCity === 'all' || selectedCity === city;
 
   // Transform data for different view combinations
@@ -162,27 +166,27 @@ export const Scatter3D = ({ selectedCity = 'all' }) => {
             wrapperStyle={{ paddingTop: '20px' }}
             formatter={(value) => <span className="text-foreground text-sm">{value}</span>}
           />
-          {showCity('Paris') && (
+          {showCity('Paris') && data3D.Paris && (
             <Scatter 
               name="Paris" 
               data={getViewData(data3D.Paris, activeView)} 
-              fill={cityColors.paris.main}
+              fill={cityColors.paris?.main}
               opacity={0.6}
             />
           )}
-          {showCity('Bordeaux') && (
+          {showCity('Bordeaux') && data3D.Bordeaux && (
             <Scatter 
               name="Bordeaux" 
               data={getViewData(data3D.Bordeaux, activeView)} 
-              fill={cityColors.bordeaux.main}
+              fill={cityColors.bordeaux?.main}
               opacity={0.6}
             />
           )}
-          {showCity('Lyon') && (
+          {showCity('Lyon') && data3D.Lyon && (
             <Scatter 
               name="Lyon" 
               data={getViewData(data3D.Lyon, activeView)} 
-              fill={cityColors.lyon.main}
+              fill={cityColors.lyon?.main}
               opacity={0.6}
             />
           )}
@@ -192,15 +196,15 @@ export const Scatter3D = ({ selectedCity = 'all' }) => {
       {/* Legend */}
       <div className="flex justify-center gap-6 mt-4">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full" style={{ background: cityColors.paris.main }} />
+          <div className="w-3 h-3 rounded-full" style={{ background: cityColors.paris?.main }} />
           <span className="text-sm text-foreground">Paris</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full" style={{ background: cityColors.bordeaux.main }} />
+          <div className="w-3 h-3 rounded-full" style={{ background: cityColors.bordeaux?.main }} />
           <span className="text-sm text-foreground">Bordeaux</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full" style={{ background: cityColors.lyon.main }} />
+          <div className="w-3 h-3 rounded-full" style={{ background: cityColors?.lyon?.main || '#f59e0b' }} />
           <span className="text-sm text-foreground">Lyon</span>
         </div>
       </div>

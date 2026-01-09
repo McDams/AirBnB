@@ -6,10 +6,13 @@ import { TotalListingsChart } from '@/components/charts/TotalListingsChart';
 import { PriceDistributionChart } from '@/components/charts/PriceDistributionChart';
 import { RoomTypeChart } from '@/components/charts/RoomTypeChart';
 import { PriceStatsTable } from '@/components/tables/PriceStatsTable';
-import { summaryKPIs, totalListings, priceStats } from '@/data/mockData';
+import { useMockData } from '@/data/useMockData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export const OverviewPage = ({ selectedCity }) => {
+  const { data } = useMockData();
+  const { summaryKPIs = {}, totalListings = [], priceStats = [] } = data || {};
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {

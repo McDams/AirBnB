@@ -10,7 +10,7 @@ import {
   ReferenceLine,
   ZAxis
 } from 'recharts';
-import { predictedVsActual, cityColors } from '@/data/mockData';
+import { useMockData } from '@/data/useMockData';
 
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
@@ -32,6 +32,10 @@ const CustomTooltip = ({ active, payload }) => {
 };
 
 export const PredictedVsActualChart = ({ selectedCity = 'all' }) => {
+  const { data } = useMockData();
+  const predictedVsActual = data?.predictedVsActual || {};
+  const cityColors = data?.cityColors || {};
+
   const showCity = (city) => selectedCity === 'all' || selectedCity === city;
 
   // Reference line data for perfect prediction
@@ -102,24 +106,24 @@ export const PredictedVsActualChart = ({ selectedCity = 'all' }) => {
         {showCity('Paris') && (
           <Scatter 
             name="Paris" 
-            data={predictedVsActual.Paris} 
-            fill={cityColors.paris.main}
+            data={predictedVsActual.Paris || []} 
+            fill={cityColors.paris?.main}
             opacity={0.7}
           />
         )}
         {showCity('Bordeaux') && (
           <Scatter 
             name="Bordeaux" 
-            data={predictedVsActual.Bordeaux} 
-            fill={cityColors.bordeaux.main}
+            data={predictedVsActual.Bordeaux || []} 
+            fill={cityColors.bordeaux?.main}
             opacity={0.7}
           />
         )}
         {showCity('Lyon') && (
           <Scatter 
             name="Lyon" 
-            data={predictedVsActual.Lyon} 
-            fill={cityColors.lyon.main}
+            data={predictedVsActual.Lyon || []} 
+            fill={cityColors.lyon?.main}
             opacity={0.7}
           />
         )}

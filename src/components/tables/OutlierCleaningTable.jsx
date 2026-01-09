@@ -8,10 +8,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { outlierCleaningData } from '@/data/mockData';
+import { useMockData } from '@/data/useMockData';
 import { ArrowRight, TrendingDown } from 'lucide-react';
 
 export const OutlierCleaningTable = () => {
+  const { data } = useMockData();
+  const outlierCleaningData = data?.outlierCleaningData || {};
   const getCityDot = (city) => {
     const color = city === 'Paris' ? 'bg-paris' : city === 'Bordeaux' ? 'bg-bordeaux' : 'bg-lyon';
     return <div className={`w-3 h-3 rounded-full ${color}`} />;
