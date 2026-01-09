@@ -823,3 +823,211 @@ ggplot(ml_df, aes(x = availability_365, y = price, color = city)) + geom_point(a
 
 ggsave("../figures/impact_availability_price_3cities.png", width = 10, height = 5)
 ```
+
+## EXPORT JSON
+
+```{r}
+library(dplyr)
+library(readr)
+library(jsonlite)
+
+# Charger tes CSV nettoyés
+lp <- read_csv("../data_cleaned/paris/listings_paris_cleaned.csv")
+lb <- read_csv("../data_cleaned/bordeaux/listings_bordeaux_cleaned.csv")
+ll <- read_csv("../data_cleaned/lyon/listings_lyon_cleaned.csv")
+
+# 1) Totaux annonces
+total_listings <- tibble(
+  city = c("Paris","Bordeaux","Lyon"),
+  total = c(nrow(lp), nrow(lb), nrow(ll))
+)
+
+# 2) Stats prix
+city_list <- list(Paris = lp, Bordeaux = lb, Lyon = ll)
+price_stats <- lapply(names(city_list), function(city) {
+  df <- city_list[[city]]
+  summarise(df,
+    city = city,
+    mean   = mean(price, na.rm=TRUE),
+    median = median(price, na.rm=TRUE),
+    min    = min(price, na.rm=TRUE),
+    max    = max(price, na.rm=TRUE)
+  )
+}) |> bind_rows()
+
+# 3) Distribution prix (bins alignés)
+bin_edges <- seq(0, 500, by = 50)
+make_bins <- function(df) {
+  cut(df$price, breaks = c(bin_edges, Inf), right = FALSE, include.lowest = TRUE) |>
+    table() |>
+    as.data.frame() |>
+    transmute(
+      range = gsub("\\[|\\)|\\[|\\)", "", Var1),
+      count = Freq
+    )
+}
+price_distribution <- list(
+  Paris    = make_bins(lp),
+  Bordeaux = make_bins(lb),
+  Lyon     = make_bins(ll)
+)
+
+# 4) Room types
+room_type_list <- list(
+  Paris    = count(lp, room_type, name = "count"),
+  Bordeaux = count(lb, room_type, name = "count"),
+  Lyon     = count(ll, room_type, name = "count")
+)
+room_type_distribution <- lapply(names(room_type_list), function(city) {
+  df <- room_type_list[[city]]
+  mutate(df, percentage = round(count/sum(count)*100,1), type = room_type) |> select(type, count, percentage)
+})
+names(room_type_distribution) <- names(room_type_list)
+
+# 5) Hôtes
+hosts_list <- list(Paris = lp, Bordeaux = lb, Lyon = ll)
+hosts_analysis <- lapply(names(hosts_list), function(city) {
+  df <- hosts_list[[city]]
+  df |>
+    filter(!is.na(calculated_host_listings_count)) |>
+    mutate(host_type = if_else(calculated_host_listings_count <= 1, "1 logement", "Multi-logements")) |>
+    count(host_type, name = "count") |>
+    mutate(percentage = round(count/sum(count)*100,1),
+           type = host_type) |>
+    select(type, count, percentage)
+})
+names(hosts_analysis) <- names(hosts_list)
+
+# 6) ML perf (exemple simple linéaire sur availability_365)
+ml_list <- list(Paris = lp, Bordeaux = lb, Lyon = ll)
+ml_model_results <- lapply(names(ml_list), function(city) {
+  df <- ml_list[[city]]
+  df2 <- df |> tidyr::drop_na(price, availability_365)
+  m <- lm(price ~ availability_365, data = df2)
+  preds <- predict(m, df2)
+  tibble(city = city,
+         r2   = cor(df2$price, preds)^2,
+         rmse = sqrt(mean((df2$price - preds)^2)))
+}) |> bind_rows()
+
+# 7) Prix vs #logements hôte (échantillon)
+set.seed(42)
+sample_price_vs_host <- function(df, n = 400) {
+  df |> filter(!is.na(price), !is.na(calculated_host_listings_count)) |>
+    slice_sample(n = min(n, nrow(df))) |>
+    transmute(hostListings = calculated_host_listings_count, price = price)
+}
+price_vs_host_listings <- list(
+  Paris    = sample_price_vs_host(lp),
+  Bordeaux = sample_price_vs_host(lb),
+  Lyon     = sample_price_vs_host(ll)
+)
+
+# 8) Predicted vs Actual (réutilise m ci-dessus ou un autre modèle)
+predicted_vs_actual <- list(
+  Paris    = { df <- lp |> tidyr::drop_na(price, availability_365); m <- lm(price ~ availability_365, df); tibble(actual = df$price, predicted = predict(m, df)) },
+  Bordeaux = { df <- lb |> tidyr::drop_na(price, availability_365); m <- lm(price ~ availability_365, df); tibble(actual = df$price, predicted = predict(m, df)) },
+  Lyon     = { df <- ll |> tidyr::drop_na(price, availability_365); m <- lm(price ~ availability_365, df); tibble(actual = df$price, predicted = predict(m, df)) }
+)
+
+# 9) Top quartiers
+top_neigh_list <- list(Paris = lp, Bordeaux = lb, Lyon = ll)
+top_neighbourhoods <- lapply(names(top_neigh_list), function(city) {
+  df <- top_neigh_list[[city]]
+  df |>
+    filter(!is.na(neighbourhood), !is.na(price)) |>
+    group_by(neighbourhood) |>
+    summarise(meanPrice = mean(price), n = n(), .groups="drop") |>
+    filter(n >= 30) |>
+    slice_max(meanPrice, n = 10) |>
+    arrange(desc(meanPrice))
+})
+names(top_neighbourhoods) <- names(top_neigh_list)
+
+# 10) Outliers (IQR) + boxplot
+iqr_clean <- function(df) {
+  q1 <- quantile(df$price, 0.25, na.rm = TRUE)
+  q3 <- quantile(df$price, 0.75, na.rm = TRUE)
+  iqr <- q3 - q1
+  filter(df, price >= q1 - 1.5*iqr, price <= q3 + 1.5*iqr)
+}
+boxplot_list <- list(Paris = lp, Bordeaux = lb, Lyon = ll)
+boxplot_data <- lapply(names(boxplot_list), function(city) {
+  df <- boxplot_list[[city]]
+  q1 <- quantile(df$price, 0.25, na.rm = TRUE)
+  q3 <- quantile(df$price, 0.75, na.rm = TRUE)
+  list(
+    q1 = unname(q1),
+    median = unname(median(df$price, na.rm=TRUE)),
+    q3 = unname(q3),
+    min = min(df$price, na.rm=TRUE),
+    max = max(df$price, na.rm=TRUE)
+  )
+})
+names(boxplot_data) <- names(boxplot_list)
+
+outlier_list <- list(Paris = lp, Bordeaux = lb, Lyon = ll)
+outlier_cleaning <- lapply(names(outlier_list), function(city) {
+  df <- outlier_list[[city]]
+  before <- df
+  after  <- iqr_clean(df)
+  list(
+    before = list(count = nrow(before), mean = mean(before$price, na.rm=TRUE), median = median(before$price, na.rm=TRUE)),
+    after  = list(count = nrow(after),  mean = mean(after$price,  na.rm=TRUE), median = median(after$price,  na.rm=TRUE))
+  )
+})
+names(outlier_cleaning) <- names(outlier_list)
+
+# 11) 3D / availability / reviews impacts (échantillons)
+availability_impact <- list(
+  Paris    = lp |> transmute(availability = availability_365, price = price),
+  Bordeaux = lb |> transmute(availability = availability_365, price = price),
+  Lyon     = ll |> transmute(availability = availability_365, price = price)
+)
+
+reviews_impact <- list(
+  Paris    = lp |> transmute(reviewsPerMonth = reviews_per_month, price = price),
+  Bordeaux = lb |> transmute(reviewsPerMonth = reviews_per_month, price = price),
+  Lyon     = ll |> transmute(reviewsPerMonth = reviews_per_month, price = price)
+)
+
+data3d <- list(
+  Paris    = lp |> slice_sample(n = min(800, nrow(lp))) |> transmute(x = availability_365, y = reviews_per_month, z = price),
+  Bordeaux = lb |> slice_sample(n = min(600, nrow(lb))) |> transmute(x = availability_365, y = reviews_per_month, z = price),
+  Lyon     = ll |> slice_sample(n = min(600, nrow(ll))) |> transmute(x = availability_365, y = reviews_per_month, z = price)
+)
+
+# 12) KPIs synthèse
+summary_kpis <- list(
+  totalListings = nrow(lp) + nrow(lb) + nrow(ll),
+  averagePrice  = mean(c(lp$price, lb$price, ll$price), na.rm=TRUE),
+  totalCities   = 3,
+  avgR2Score    = mean(ml_model_results$r2, na.rm=TRUE)
+)
+
+# Écrire un seul JSON aligné sur mockData.js
+jsonlite::write_json(
+  list(
+    cityColors = NULL, # gérés en front (style)
+    totalListings = total_listings,
+    priceStats = price_stats,
+    roomTypeDistribution = room_type_distribution,
+    priceDistribution = price_distribution,
+    hostsAnalysis = hosts_analysis,
+    priceVsHostListings = price_vs_host_listings,
+    boxplotData = boxplot_data,
+    outlierCleaningData = outlier_cleaning,
+    mlModelResults = ml_model_results,
+    predictedVsActual = predicted_vs_actual,
+    topNeighbourhoods = top_neighbourhoods,
+    availabilityImpact = availability_impact,
+    reviewsImpact = reviews_impact, # à générer si besoin
+    data3D = data3d,
+    summaryKPIs = summary_kpis
+  ),
+  "../src/data/mockData.json", # place le JSON accessible par le front
+  auto_unbox = TRUE,
+  pretty = TRUE
+)
+
+```
