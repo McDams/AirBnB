@@ -114,7 +114,9 @@ listings_paris <- listings_paris %>%
 # Vérification
 head(listings_paris)
 ```
+
 ## 3.1.2 Listings - Remplacement les valeurs NA dans la colonne price
+
 ```{r}
 # Remplacement des valeurs NA dans la colonne price par la moyenne des prix
 mean_price_paris <- mean(listings_paris$price, na.rm = TRUE)
@@ -143,6 +145,7 @@ head(listings_bordeaux)
 ```
 
 3.2.2 Remplacement des valeurs NA dans la colonne price
+
 ```{r}
 # Remplacement des valeurs NA dans la colonne price par la moyenne des prix
 mean_price_bordeaux <- mean(listings_bordeaux$price, na.rm = TRUE)
@@ -169,7 +172,9 @@ listings_lyon <- listings_lyon %>%
 # Vérification
 head(listings_lyon)
 ```
+
 ## 3.3.2 Listings - Remplacement des valeurs NA dans la colonne price
+
 ```{r}
 # Remplacement des valeurs NA dans la colonne price par la moyenne des prix
 mean_price_lyon <- mean(listings_lyon$price, na.rm = TRUE)
@@ -203,9 +208,11 @@ listings_lyon <- read_csv("../data_cleaned/lyon/listings_lyon_cleaned.csv")
 ```
 
 ## 6. Analyse exploratoire des données (EDA)
+
 ## 6.1 Visualisation Globale des datasets
 
 ## 6.1.1 Nombre total d'annonces par ville
+
 ```{r}
 library(tibble)
 library(ggplot2)
@@ -225,7 +232,9 @@ print(total_listings)
 ```
 
 ## 6.1.2 Visualiser le nombre total d'annonces par ville (Affichage avec les nombres )
+
 ## 6.1.2.1 Graphique en barres
+
 ```{r}
 ggplot(total_listings, aes(x = ville, y = nombre_annonces, fill = ville)) +
   geom_bar(stat = "identity") +
@@ -240,6 +249,7 @@ ggsave("../images/total_listings_by_city.png")
 ```
 
 ## 6.1.2.2 Pie chart: Repartition Bordeaux, Lyon, Paris
+
 ```{r}
 library(ggplot2)
 
@@ -257,7 +267,9 @@ ggsave("../images/pie_chart_listings_by_city.png")
 ```
 
 ## 6.2 Analyse des prix des annonces
+
 ## 6.2.1 Prix moyen, médian, min, max;
+
 ```{r}
 price_summary <- function(data, city_name) {
   summary <- data %>%
@@ -281,6 +293,7 @@ write_csv(price_summaries, "../data_cleaned/price_summaries.csv")
 ```
 
 ## 6.2.2 Visualisation des prix moyens par ville
+
 ```{r}
 ggplot(price_summaries, aes(x = ville, y = prix_moyen, fill = ville)) +
   geom_bar(stat = "identity") +
@@ -315,7 +328,9 @@ ggplot(all_listings, aes(x = price, fill = ville)) +
 # Sauvegarder le graphique
 ggsave("../images/price_distribution_by_city.png")
 ```
+
 ## 6.3 Avis & notations
+
 ## 6.3.1 Rassembler les données
 
 ```{r}
@@ -381,6 +396,7 @@ df %>%
 ```
 
 ## 6.4 Disponibilité
+
 ## 6.4.1 logements disponibles / non disponibles par ville
 
 ```{r}
@@ -433,6 +449,7 @@ ggplot(df, aes(x = availability_365, y = price, color = city)) +
   ) +
   theme_minimal()
 ```
+
 ## =========================
 
 ## 7️⃣ Hôtes 👤 + 8️⃣ Outliers 🚨 + 9️⃣ ML 🤖 + 🔟 Synthèse
@@ -710,7 +727,6 @@ ggsave("../figures/regression_simple_by_city.png",
 
 ```
 
-
 ## 9.5 Graphique 3D (régression multiple) — exemple avec 3 variables
 
 ```{r}
@@ -747,7 +763,6 @@ zaxis = list(title = "price (€)")
 p3d
 
 ```
-
 
 ## =======================================================
 
@@ -804,15 +819,7 @@ theme_minimal()
 ## 10.3 Impact capacité → prix (3 courbes sur un même graphe)
 
 ```{r}
-ggplot(ml_df, aes(x = availability_365, y = price, color = city)) + 
-  geom_point(alpha = 0.15) +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(
-    title = "Impact de la disponibilité (availability_365) sur le prix — comparaison 3 villes",
-    x = "Disponibilité sur 365 jours",
-    y = "Prix (€)"
-  ) +
-  theme_minimal()
+ggplot(ml_df, aes(x = availability_365, y = price, color = city)) + geom_point(alpha = 0.15) + geom_smooth(method = "lm", se = FALSE) + labs( title = "Impact de la disponibilité (availability_365) sur le prix — comparaison 3 villes", x = "Disponibilité sur 365 jours", y = "Prix (€)" ) + theme_minimal()
 
-ggsave("../figures/impact_availability_price_3cities.png",
-       width = 10, height = 5)
+ggsave("../figures/impact_availability_price_3cities.png", width = 10, height = 5)
+```
