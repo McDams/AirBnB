@@ -16,6 +16,7 @@ library(skimr)      # Statistique
 ## 2. Importation des données
 
 ## 2.1 Paris
+
 ## 2.1.1 Listings
 
 ```{r}
@@ -23,64 +24,84 @@ listings_paris <- read_csv("../data/paris/listings.csv")
 ```
 
 ## 2.1.2 Affichage des premières lignes
+
 ```{r}
 head(listings_paris)
 ```
+
 ## 2.1.3 Suppression des doublons
+
 ```{r}
 listings_paris <- listings_paris %>%
   distinct()
 ```
 
 ## 2.1.4 Statistiques descriptives
+
 ```{r}
 skim(listings_paris)
 ```
 
 ## 2.2 Bordeaux
+
 ## 2.2.1 Listings
+
 ```{r}
 listings_bordeaux <- read_csv("../data/bordeaux/listings.csv")
 ```
 
 ## 2.2.2 Affichage des premières lignes
+
 ```{r}
 head(listings_bordeaux)
 ```
+
 ## 2.2.3 Suppression des doublons
+
 ```{r}
 listings_bordeaux <- listings_bordeaux %>%
   distinct()
 ```
 
 ## 2.2.4 Statistiques descriptives
+
 ```{r}
 skim(listings_bordeaux)
 ```
+
 ## 2.3 Lyon
+
 ## 2.3.1 Listings
+
 ```{r}
 listings_lyon <- read_csv("../data/lyon/listings.csv")
 ```
 
 ## 2.3.2 Affichage des premières lignes
+
 ```{r}
 head(listings_lyon)
 ```
+
 ## 2.3.3 Suppression des doublons
+
 ```{r}
 listings_lyon <- listings_lyon %>%
   distinct()
 ```
 
 ## 2.3.4 Statistiques descriptives
+
 ```{r}
 skim(listings_lyon)
 ```
 
 ## 3. Nettoyage des données
+
 ## 3.1 Paris
+
 ## 3.1.1 Listings - Suppression des colonnes inutiles
+
 ```{r}
 # Suppression de la colonne licence
 listings_paris <- listings_paris %>%
@@ -105,7 +126,9 @@ head(listings_paris)
 ```
 
 ## 3.2 Bordeaux
+
 ## 3.2.1 Listings - Suppression des colonnes inutiles
+
 ```{r}
 # Suppression de la colonne licence
 listings_bordeaux <- listings_bordeaux %>%
@@ -131,7 +154,9 @@ head(listings_bordeaux)
 ```
 
 ## 3.3 Lyon
+
 ## 3.3.1 Listings - Suppression des colonnes inutiles
+
 ```{r}
 # Suppression de la colonne licence
 listings_lyon <- listings_lyon %>%
@@ -156,6 +181,7 @@ head(listings_lyon)
 ```
 
 ## 4. Sauvegarde des données nettoyées
+
 ```{r}
 write_csv(listings_paris, "../data_cleaned/paris/listings_cleaned.csv")
 write_csv(listings_bordeaux, "../data_cleaned/bordeaux/listings_cleaned.csv")
@@ -163,17 +189,18 @@ write_csv(listings_lyon, "../data_cleaned/lyon/listings_cleaned.csv")
 ```
 
 ## 5. Renommer les fichiers nettoyés
+
 ```{r}
 file.rename("../data_cleaned/paris/listings_cleaned.csv", "../data_cleaned/paris/listings_paris_cleaned.csv")
 file.rename("../data_cleaned/bordeaux/listings_cleaned.csv", "../data_cleaned/bordeaux/listings_bordeaux_cleaned.csv")
 file.rename("../data_cleaned/lyon/listings_cleaned.csv", "../data_cleaned/lyon/listings_lyon_cleaned.csv")
 ```
 
-````{r}
+```{r}
 listings_paris <- read_csv("../data_cleaned/paris/listings_paris_cleaned.csv")
 listings_bordeaux <- read_csv("../data_cleaned/bordeaux/listings_bordeaux_cleaned.csv")
 listings_lyon <- read_csv("../data_cleaned/lyon/listings_lyon_cleaned.csv")
-````
+```
 
 ## 6. Analyse exploratoire des données (EDA)
 ## 6.1 Visualisation Globale des datasets
@@ -287,143 +314,121 @@ ggplot(all_listings, aes(x = price, fill = ville)) +
 # Sauvegarder le graphique
 ggsave("../images/price_distribution_by_city.png")
 ```
+## 6.3 Avis & notations
+## 6.3.1 Rassembler les données
 
-## 6.3 Analyse des types de logements
-## 6.3.1 Répartition des types de logements par ville
 ```{r}
-type_summary <- function(data, city_name) {
-  summary <- data %>%
-    group_by(room_type) %>%
-    summarise(nombre_annonces = n()) %>%
-    mutate(ville = city_name)
-  return(summary)
-}
-summary_paris <- type_summary(listings_paris, "Paris")
-summary_bordeaux <- type_summary(listings_bordeaux, "Bordeaux")
-summary_lyon <- type_summary(listings_lyon, "Lyon")
-type_summaries <- bind_rows(summary_paris, summary_bordeaux, summary_lyon)
-print(type_summaries)
+listings_paris <- listings_paris %>% mutate(city = "Paris")
+listings_bordeaux <- listings_bordeaux %>% mutate(city = "Bordeaux")
+listings_lyon <- listings_lyon %>% mutate(city = "Lyon")
 
-# Sauvegarder le tableau des résumés de types de logements
-write_csv(type_summaries, "../data_cleaned/type_summaries.csv")
+df <- bind_rows(listings_paris, listings_bordeaux, listings_lyon) %>%
+  filter(price > 0)
 ```
-## 6.3.2 Visualisation de la répartition des types de logements par ville
+
+## 6.3.2 prix vs nombre de reviews (par ville)
+
 ```{r}
-ggplot(type_summaries, aes(x = room_type, y = nombre_annonces, fill = room_type)) +
-  geom_bar(stat = "identity") +
-  facet_wrap(~ ville) +
-  geom_text(aes(label = nombre_annonces), vjust = -0.5) +
-  labs(title = "Répartition des types de logements AirBnB par ville",
-       x = "Type de logement",
-       y = "Nombre d'annonces") +
+ggplot(df, aes(x = number_of_reviews, y = price, color = city)) +
+  geom_point(alpha = 0.4) +
+  scale_y_log10() +
+  labs(
+    title = "Prix vs nombre de reviews",
+    x = "Nombre de reviews",
+    y = "Prix (€)",
+    color = "Ville"
+  ) +
   theme_minimal()
-# Sauvegarder le graphique
-ggsave("../images/room_type_distribution_by_city.png")
 ```
 
-## 6.3.3 Prix par type de logement et par ville
-## 6.3.3.A. Tableau récapitulatif
-```{r}
-price_by_type_summary <- function(data, city_name) {
-  summary <- data %>%
-    group_by(room_type) %>%
-    summarise(
-      prix_moyen = mean(price, na.rm = TRUE),
-      prix_median = median(price, na.rm = TRUE)
-    ) %>%
-    mutate(ville = city_name)
-  return(summary)
-}
-summary_paris <- price_by_type_summary(listings_paris, "Paris")
-summary_bordeaux <- price_by_type_summary(listings_bordeaux, "Bordeaux")
-summary_lyon <- price_by_type_summary(listings_lyon, "Lyon")
-price_by_type_summaries <- bind_rows(summary_paris, summary_bordeaux, summary_lyon)
-print(price_by_type_summaries)
+## 6.3.3 prix vs reviews par mois
 
-# Sauvegarder le tableau des résumés de prix par type de logement
-write_csv(price_by_type_summaries, "../data_cleaned/price_by_type_summaries.csv")
-```
-
-## 6.3.3.B. Visualisation
 ```{r}
-ggplot(price_by_type_summaries, aes(x = room_type, y = prix_moyen, fill = room_type)) +
-  geom_bar(stat = "identity") +
-  facet_wrap(~ ville) +
-  geom_text(aes(label = round(prix_moyen, 2)), vjust = -0.5) +
-  labs(title = "Prix moyen des annonces AirBnB par type de logement et par ville",
-       x = "Type de logement",
-       y = "Prix moyen (€)") +
+ggplot(df, aes(x = reviews_per_month, y = price, color = city)) +
+  geom_point(alpha = 0.4) +
+  scale_y_log10() +
+  labs(
+    title = "Prix vs fréquence des reviews",
+    x = "Reviews par mois",
+    y = "Prix (€)",
+    color = "Ville"
+  ) +
   theme_minimal()
-
-# Sauvegarder le graphique
-ggsave("../images/average_price_by_room_type_and_city.png")
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+## 6.3.4 prix moyen par niveau de réputation
+
+```{r}
+df %>%
+  mutate(reputation = case_when(
+    number_of_reviews == 0 ~ "Aucun avis",
+    number_of_reviews < 10 ~ "Peu d'avis",
+    number_of_reviews < 50 ~ "Avis modérés",
+    TRUE ~ "Beaucoup d'avis"
+  )) %>%
+  group_by(city, reputation) %>%
+  summarise(mean_price = mean(price), .groups = "drop") %>%
+  ggplot(aes(x = reputation, y = mean_price, fill = city)) +
+  geom_col(position = "dodge") +
+  labs(
+    title = "Prix moyen selon la réputation",
+    x = "Niveau de réputation",
+    y = "Prix moyen (€)",
+    fill = "Ville"
+  ) +
+  theme_minimal()
+```
+
+## 6.4 Disponibilité
+## 6.4.1 logements disponibles / non disponibles par ville
+
+```{r}
+df <- df %>%
+  mutate(disponible = availability_365 > 0)
+
+df %>%
+  count(city, disponible) %>%
+  group_by(city) %>%
+  mutate(prop = n / sum(n)) %>%
+  ggplot(aes(x = "", y = prop, fill = disponible)) +
+  geom_col(width = 1) +
+  coord_polar("y") +
+  facet_wrap(~ city) +
+  labs(
+    title = "Disponibilité des logements par ville",
+    fill = "Disponible"
+  ) +
+  theme_void()
+```
+
+## 6.4.2 taux de disponibilité par ville
+
+```{r}
+df %>%
+  group_by(city) %>%
+  summarise(taux_disponibilite = mean(disponible)) %>%
+  ggplot(aes(x = reorder(city, taux_disponibilite), y = taux_disponibilite)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(
+    title = "Taux de disponibilité par ville",
+    x = "Ville",
+    y = "Taux de disponibilité"
+  ) +
+  theme_minimal()
+```
+
+## 6.4.3 prix vs disponibilité
+
+```{r}
+ggplot(df, aes(x = availability_365, y = price, color = city)) +
+  geom_point(alpha = 0.4) +
+  scale_y_log10() +
+  labs(
+    title = "Prix vs disponibilité annuelle",
+    x = "Jours disponibles par an",
+    y = "Prix (€)",
+    color = "Ville"
+  ) +
+  theme_minimal()
+```
