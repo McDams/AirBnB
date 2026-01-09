@@ -485,12 +485,36 @@ ggsave("../figures/hist_price_before_after_outliers.png", width = 12, height = 6
 ```{r}
 
 
-
 ```
 
 ## 9.1 Entraîner un modèle par ville (comparaison R² + prédictions)
 
 ```{r}
+
+ml_df <- listings_all_clean %>%
+select(
+city,
+price,
+calculated_host_listings_count,
+number_of_reviews,
+number_of_reviews_ltm,
+reviews_per_month,
+availability_365,
+room_type
+) %>%
+mutate(
+calculated_host_listings_count = as.numeric(calculated_host_listings_count),
+number_of_reviews = as.numeric(number_of_reviews),
+number_of_reviews_ltm = as.numeric(number_of_reviews_ltm),
+availability_365 = as.numeric(availability_365),
+reviews_per_month = if_else(
+is.na(reviews_per_month),
+mean(reviews_per_month, na.rm = TRUE),
+reviews_per_month
+),
+room_type = as.factor(room_type)
+) %>%
+drop_na(price, calculated_host_listings_count, availability_365)
 
 
 ```
@@ -498,6 +522,16 @@ ggsave("../figures/hist_price_before_after_outliers.png", width = 12, height = 6
 ## 9.2 Tableau R² comparatif
 
 ```{r}
+ggplot(ml_df, aes(x = availability_365, y = price)) +
+geom_point(alpha = 0.25) +
+geom_smooth(method = "lm", se = FALSE) +
+facet_wrap(~city, scales = "free_y") +
+labs(
+title = "Régression linéaire simple : Prix ~ Disponibilité (availability_365)",
+x = "Disponibilité sur 365 jours",
+y = "Prix (€)"
+) +
+theme_minimal()
 
 
 ```
@@ -506,7 +540,38 @@ ggsave("../figures/hist_price_before_after_outliers.png", width = 12, height = 6
 
 ```{r}
 
+set.seed(42)
 
+models <- ml_df %>%
+group_by(city) %>%
+group_map(~{
+idx <- sample(seq_len(nrow(.x)), size = floor(0.8 * nrow(.x)))
+train <- .x[idx, ]
+test <- .x[-idx, ]
+
+model <- lm(
+  price ~ calculated_host_listings_count +
+    number_of_reviews +
+    number_of_reviews_ltm +
+    reviews_per_month +
+    availability_365 +
+    room_type,
+  data = train
+)
+
+pred <- predict(model, newdata = test)
+
+tibble(
+  city = unique(.x$city),
+  r2 = cor(test$price, pred, use = "complete.obs")^2,
+  price_real = test$price,
+  price_pred = pred
+)
+
+}) %>%
+bind_rows()
+
+models
 
 ```
 
@@ -514,16 +579,60 @@ ggsave("../figures/hist_price_before_after_outliers.png", width = 12, height = 6
 
 ```{r}
 
+ggplot(ml_df, aes(x = availability_365, y = price)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(method = "lm", se = FALSE) +
+  facet_wrap(~city, scales = "free_y") +
+  labs(
+    title = "Régression linéaire simple : Prix ~ Disponibilité (par ville)",
+    x = "Disponibilité sur 365 jours (availability_365)",
+    y = "Prix (€)"
+  ) +
+  theme_minimal()
 
+ggsave("../figures/regression_simple_by_city.png",
+       width = 10, height = 5)
 
 ```
+
 
 ## 9.5 Graphique 3D (régression multiple) — exemple avec 3 variables
 
 ```{r}
+## On prend un échantillon pour éviter trop de points
+set.seed(42)
 
+ml_sample <- ml_df %>%
+group_by(city) %>%
+group_modify(~{
+k <- min(800, nrow(.x))
+dplyr::slice_sample(.x, n = k)
+}) %>%
+ungroup()
+
+p3d <- plot_ly(
+ml_sample,
+x = ~availability_365,
+y = ~reviews_per_month,
+z = ~price,
+color = ~city,
+type = "scatter3d",
+mode = "markers",
+marker = list(size = 2, opacity = 0.5)
+) %>%
+layout(
+title = "3D : Prix vs Disponibilité vs Activité (par ville)",
+scene = list(
+xaxis = list(title = "availability_365"),
+yaxis = list(title = "reviews_per_month"),
+zaxis = list(title = "price (€)")
+)
+)
+
+p3d
 
 ```
+
 
 ## =======================================================
 
@@ -534,12 +643,45 @@ ggsave("../figures/hist_price_before_after_outliers.png", width = 12, height = 6
 ## 10.1 Top 10 types de logements les plus chers (par ville) — property_type
 
 ```{r}
+top_neighbourhood <- listings_all_clean %>%
+filter(!is.na(neighbourhood), !is.na(price)) %>%
+group_by(city, neighbourhood) %>%
+summarise(
+mean_price = mean(price, na.rm = TRUE),
+n = n(),
+.groups = "drop"
+) %>%
+filter(n >= 30) %>% # évite les quartiers trop rares
+group_by(city) %>%
+slice_max(mean_price, n = 10) %>%
+ungroup()
+
+ggplot(top_neighbourhood,
+aes(x = reorder(neighbourhood, mean_price), y = mean_price)) +
+geom_col() +
+coord_flip() +
+facet_wrap(~city, scales = "free") +
+labs(
+title = "Top 10 quartiers (neighbourhood) les plus chers par ville",
+x = NULL,
+y = "Prix moyen (€)"
+) +
+theme_minimal()
 
 ```
 
 ## 10.2 Comparaison prix moyen / note moyenne par ville
 
 ```{r}
+ggplot(ml_df, aes(x = reviews_per_month, y = price, color = city)) +
+geom_point(alpha = 0.15) +
+geom_smooth(method = "lm", se = FALSE) +
+labs(
+title = "Impact de l'activité (reviews_per_month) sur le prix — 3 villes",
+x = "Avis par mois (reviews_per_month)",
+y = "Prix (€)"
+) +
+theme_minimal()
 
 
 ```
@@ -547,8 +689,16 @@ ggsave("../figures/hist_price_before_after_outliers.png", width = 12, height = 6
 ## 10.3 Impact capacité → prix (3 courbes sur un même graphe)
 
 ```{r}
+ggplot(ml_df, aes(x = availability_365, y = price, color = city)) + 
+  geom_point(alpha = 0.15) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Impact de la disponibilité (availability_365) sur le prix — comparaison 3 villes",
+    x = "Disponibilité sur 365 jours",
+    y = "Prix (€)"
+  ) +
+  theme_minimal()
 
-```
-
-```{r}
+ggsave("../figures/impact_availability_price_3cities.png",
+       width = 10, height = 5)
 ```
