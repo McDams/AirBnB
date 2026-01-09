@@ -1006,9 +1006,14 @@ summary_kpis <- list(
 )
 
 # Écrire un seul JSON aligné sur mockData.js
+library(here)
+
+output_path <- here::here("src", "data", "mockData.json")
+dir.create(dirname(output_path), recursive = TRUE, showWarnings = FALSE)
+
 jsonlite::write_json(
   list(
-    cityColors = NULL, # gérés en front (style)
+    cityColors = NULL,
     totalListings = total_listings,
     priceStats = price_stats,
     roomTypeDistribution = room_type_distribution,
@@ -1021,13 +1026,12 @@ jsonlite::write_json(
     predictedVsActual = predicted_vs_actual,
     topNeighbourhoods = top_neighbourhoods,
     availabilityImpact = availability_impact,
-    reviewsImpact = reviews_impact, # à générer si besoin
+    reviewsImpact = reviews_impact,
     data3D = data3d,
     summaryKPIs = summary_kpis
   ),
-  "../src/data/mockData.json", # place le JSON accessible par le front
+  output_path,
   auto_unbox = TRUE,
   pretty = TRUE
 )
-
 ```
